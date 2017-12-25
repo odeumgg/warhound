@@ -1,4 +1,4 @@
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 
 from .round import mk_empty_round
 
@@ -24,8 +24,8 @@ class Match:
         self.attrs                 = None
         self.team_by_id            = {}
         self.player_by_id          = {}
-        self.team_by_id_by_ordinal = defaultdict(dict)
-        self.round_by_ordinal      = defaultdict(mk_empty_round)
+        self.team_by_id_by_ordinal = OrderedDict()
+        self.round_by_ordinal      = OrderedDict()
         self.server_shutdown       = None
         self.outcome               = None
 

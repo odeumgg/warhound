@@ -4,7 +4,7 @@ from .model.all_events import mk_empty_death_event, mk_empty_round_event
 from .model.battlerite import mk_empty_battlerite
 from .model.match import mk_empty_match, mk_empty_match_outcome
 from .model.player import mk_empty_player
-from .model.round import mk_empty_round_outcome
+from .model.round import mk_empty_round, mk_empty_round_outcome
 from .model.server_shutdown import mk_empty_server_shutdown
 from .model.team import mk_empty_team
 from .model.user_round_spell import mk_empty_user_round_spell
@@ -36,15 +36,10 @@ def process_match_start(event, match, state):
 def process_match_reserved_user(event, match, state):
     cursor, e_type, data = event
 
-    player                                   = mk_empty_player()
-    player.player_id                         = data['accountId']
-    player.champion_id                       = data['character']
-    player.team_id                           = None
-    player.attrs                             = data
-    player.battlerite_by_id                  = {}
-    player.round_performance_by_ordinal      = {}
-    player.list_all_events_by_ordinal        = defaultdict(list)
-    player.list_user_round_spells_by_ordinal = defaultdict(list)
+    player             = mk_empty_player()
+    player.player_id   = data['accountId']
+    player.champion_id = data['character']
+    player.attrs       = data
 
     match.player_by_id[player.player_id] = player
 
@@ -61,7 +56,13 @@ def process_match_reserved_user(event, match, state):
         match.team_by_id[team_id] = team
 
     player.team_id = team_id
-    match.team_by_id_by_ordinal[side][team_id] = team
+
+    if side in match.team_by_id_by_ordinal:
+        team_by_id = match.team_by_id_by_ordinal[side]
+    else:
+        team_by_id = match.team_by_id_by_ordinal[side] = {}
+
+    team_by_id[team_id] = team
 
     return None
 
@@ -94,9 +95,18 @@ def process_round_event(event, match, state):
     state['round'] = ordinal
 
     player = match.player_by_id[round_event.player_id]
-    player.list_all_events_by_ordinal[ordinal].append(round_event)
+
+    if ordinal in player.list_all_events_by_ordinal:
+        list_all_events = player.list_all_events_by_ordinal[ordinal]
+    else:
+        list_all_events = player.list_all_events_by_ordinal[ordinal] = []
+
+    list_all_events.append(round_event)
     
-    _round = match.round_by_ordinal[ordinal]
+    if ordinal in match.round_by_ordinal:
+        _round = match.round_by_ordinal[ordinal]
+    else:
+        _round = match.round_by_ordinal[ordinal] = mk_empty_round()
 
     if not hasattr(_round, 'list_all_events'):
         _round.list_all_events = [round_event]
@@ -115,12 +125,12 @@ def process_death_event(event, match, state):
 
     ordinal = state['round']
 
-    _round = match.round_by_ordinal[ordinal]
-
-    if not hasattr(_round, 'list_all_events'):
-        _round.list_all_events = [death]
+    if ordinal in match.round_by_ordinal:
+        _round = match.round_by_ordinal[ordinal]
     else:
-        _round.list_all_events.append(death)
+        _round = match.round_by_ordinal[ordinal] = mk_empty_round()
+
+    _round.list_all_events.append(death)
 
     return None
 
@@ -130,8 +140,8 @@ def process_round_finished_event(event, match, state):
 
     round_outcome = mk_empty_round_outcome()
 
-    # Store team round performance
-    # Story player round performance
+    # Store team round outcome
+    # Story player round outcome
 
     return None
 
@@ -169,14 +179,22 @@ def process_user_round_spell(event, match, state):
     ordinal = data['round']
 
     player = match.player_by_id[user_round_spell.player_id]
-    player.list_user_round_spells_by_ordinal[ordinal].append(user_round_spell)
-    
-    _round = match.round_by_ordinal[ordinal]
 
-    if not hasattr(_round, 'list_user_round_spells'):
-        _round.list_user_round_spells = [user_round_spell]
+    if ordinal in player.list_user_round_spells_by_ordinal:
+        list_user_round_spells = \
+            player.list_user_round_spells_by_ordinal[ordinal]
     else:
-        _round.list_user_round_spells.append(user_round_spell)
+        list_user_round_spells = \
+            player.list_user_round_spells_by_ordinal[ordinal] = []
+
+    list_user_round_spells.append(user_round_spell)
+
+    if ordinal in match.round_by_ordinal:
+        _round = match.round_by_ordinal[ordinal]
+    else:
+        _round = match.round_by_ordinal[ordinal] = mk_empty_round()
+
+    _round.list_user_round_spells.append(user_round_spell)
 
     return None
 
