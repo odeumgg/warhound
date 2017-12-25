@@ -2,8 +2,6 @@
 
 Parse Battlerite telemetry files with ease.
 
-(This library is in early development and doesn't contain any working code!)
-
 
 ## Introduction
 
@@ -19,4 +17,14 @@ details" response body. You can interact with the API using a library like
 Once you obtain the URL for the match telemetry, use this library to parse it.
 
 More docs as and when the library develops.
+
+
+## Telemetry
+
+This section will contain information about what is parsed from a telemetry.
+
+It is an expansive data set and will require a bit of familiarization to get
+the most use out of this library.
+
+Forthcoming.
 
