@@ -24,7 +24,7 @@ class PlayerMatchOutcome:
 class Player:
     __slots__ = ('player_id', 'champion_id', 'team_id', 'attrs',
                  'battlerite_by_id', 'round_outcome_by_ordinal',
-                 'list_all_events_by_ordinal',
+                 'list_gameplay_by_ordinal',
                  'list_user_round_spells_by_ordinal')
 
 
@@ -34,7 +34,7 @@ class Player:
         self.team_id                           = None
         self.battlerite_by_id                  = {}
         self.round_outcome_by_ordinal          = OrderedDict()
-        self.list_all_events_by_ordinal        = OrderedDict()
+        self.list_gameplay_by_ordinal          = OrderedDict()
         self.list_user_round_spells_by_ordinal = OrderedDict()
 
 

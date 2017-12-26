@@ -7,11 +7,11 @@ class RoundOutcome:
 
 
 class Round:
-    __slots__ = ('list_all_events', 'list_user_round_spells')
+    __slots__ = ('list_gameplay', 'list_user_round_spells')
 
 
     def __init__(self):
-        self.list_all_events        = []
+        self.list_gameplay          = []
         self.list_user_round_spells = []
 
 

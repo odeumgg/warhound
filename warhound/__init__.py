@@ -1,6 +1,6 @@
 from collections import defaultdict, namedtuple
 
-from .model.all_events import mk_empty_death_event, mk_empty_round_event
+from .model.gameplay import mk_empty_death_event, mk_empty_round_event
 from .model.battlerite import mk_empty_battlerite
 from .model.match import mk_empty_match, mk_empty_match_outcome
 from .model.player import mk_empty_player, mk_empty_player_round_outcome
@@ -96,22 +96,19 @@ def process_round_event(event, match, state):
 
     player = match.player_by_id[round_event.player_id]
 
-    if ordinal in player.list_all_events_by_ordinal:
-        list_all_events = player.list_all_events_by_ordinal[ordinal]
+    if ordinal in player.list_gameplay_by_ordinal:
+        list_gameplay = player.list_gameplay_by_ordinal[ordinal]
     else:
-        list_all_events = player.list_all_events_by_ordinal[ordinal] = []
+        list_gameplay = player.list_gameplay_by_ordinal[ordinal] = []
 
-    list_all_events.append(round_event)
+    list_gameplay.append(round_event)
     
     if ordinal in match.round_by_ordinal:
         _round = match.round_by_ordinal[ordinal]
     else:
         _round = match.round_by_ordinal[ordinal] = mk_empty_round()
 
-    if not hasattr(_round, 'list_all_events'):
-        _round.list_all_events = [round_event]
-    else:
-        _round.list_all_events.append(round_event)
+    _round.list_gameplay.append(round_event)
 
     return None
 
@@ -130,7 +127,7 @@ def process_death_event(event, match, state):
     else:
         _round = match.round_by_ordinal[ordinal] = mk_empty_round()
 
-    _round.list_all_events.append(death)
+    _round.list_gameplay.append(death)
 
     return None
 
