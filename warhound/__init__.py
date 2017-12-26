@@ -1,13 +1,13 @@
 from collections import defaultdict, namedtuple
 
-from .model.gameplay import mk_empty_death_event, mk_empty_round_event
-from .model.battlerite import mk_empty_battlerite
-from .model.match import mk_empty_match, mk_empty_match_outcome
-from .model.player import mk_empty_player, mk_empty_player_round_outcome
-from .model.round import mk_empty_round, mk_empty_round_outcome
-from .model.server_shutdown import mk_empty_server_shutdown
-from .model.team import mk_empty_team, mk_empty_team_round_outcome
-from .model.user_round_spell import mk_empty_user_round_spell
+from .entity.battlerite import mk_empty_battlerite
+from .entity.gameplay import mk_empty_death_event, mk_empty_round_event
+from .entity.match import mk_empty_match, mk_empty_match_outcome
+from .entity.player import mk_empty_player, mk_empty_player_round_outcome
+from .entity.round import mk_empty_round, mk_empty_round_outcome
+from .entity.server_shutdown import mk_empty_server_shutdown
+from .entity.team import mk_empty_team, mk_empty_team_round_outcome
+from .entity.user_round_spell import mk_empty_user_round_spell
 
 
 class Event(namedtuple('Event', ['cursor', 'e_type', 'data'])):
