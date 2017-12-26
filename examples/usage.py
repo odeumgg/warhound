@@ -11,6 +11,7 @@ import warhound
 # For your usage: Change this to a path to a telemetry.
 telemetry_path = os.path.join(cwd, 'telemetries', 'my_telemetry.json')
 
-with open(telemetry_path, 'rb') as telemetry:
-    raw = telemetry.read()
+with open(telemetry_path, 'rb') as telemetry_json:
+    raw = telemetry_json.read()
     warhound.process(json.loads(raw))
+
