@@ -3,10 +3,10 @@ from collections import defaultdict, namedtuple
 from .model.all_events import mk_empty_death_event, mk_empty_round_event
 from .model.battlerite import mk_empty_battlerite
 from .model.match import mk_empty_match, mk_empty_match_outcome
-from .model.player import mk_empty_player
+from .model.player import mk_empty_player, mk_empty_player_round_outcome
 from .model.round import mk_empty_round, mk_empty_round_outcome
 from .model.server_shutdown import mk_empty_server_shutdown
-from .model.team import mk_empty_team
+from .model.team import mk_empty_team, mk_empty_team_round_outcome
 from .model.user_round_spell import mk_empty_user_round_spell
 
 
@@ -139,9 +139,35 @@ def process_round_finished_event(event, match, state):
     cursor, e_type, data = event
 
     round_outcome = mk_empty_round_outcome()
+    ordinal = data['round']
+    list_stats = data['playerStats']
 
-    # Store team round outcome
-    # Story player round outcome
+    for _, team_by_id in match.team_by_id_by_ordinal.items():
+        for team_id, team in team_by_id.items():
+            won = data['winningTeam'] == ordinal
+
+            team_round_outcome         = mk_empty_team_round_outcome()
+            team_round_outcome.team_id = team.team_id
+            team_round_outcome.round   = ordinal
+            team_round_outcome.won     = won
+
+            for player_id, player in team.player_by_id.items():
+                l = lambda s: s['userID'] == player_id
+
+                player_stats = list(filter(l, data['playerStats']))
+
+                player_round_outcome = mk_empty_player_round_outcome()
+                player_round_outcome.player_id = player_id
+                player_round_outcome.team_id   = team_id
+                player_round_outcome.round     = ordinal
+                player_round_outcome.won       = won
+                player_round_outcome.stats     = player_stats
+
+                team_round_outcome.stats_by_player_id[player_id] = player_stats
+
+                player.round_outcome_by_ordinal[ordinal] = player_round_outcome
+
+            team.round_outcome_by_ordinal[ordinal] = team_round_outcome
 
     return None
 

@@ -2,11 +2,15 @@ from collections import namedtuple, OrderedDict
 
 
 class PlayerRoundOutcome:
-    __slots__ = ('round', 'attrs')
+    __slots__ = ('player_id', 'team_id', 'round', 'won', 'stats')
 
 
     def __init__(self):
-        pass
+        self.player_id = None
+        self.team_id   = None
+        self.round     = None
+        self.won       = None
+        self.stats     = None
 
 
 class PlayerMatchOutcome:
