@@ -11,6 +11,8 @@ def process_match_start(event, telemetry, state):
     match.match_id = data['matchID']
     match.attrs    = data
 
+    state['new_round'] = True
+
     return None
 
 

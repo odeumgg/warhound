@@ -26,10 +26,11 @@ def process_round_event(event, telemetry, state):
 
     list_gameplay.append(round_event)
 
-    if ordinal in match.round_by_ordinal:
-        _round = match.round_by_ordinal[ordinal]
-    else:
+    if 'new_round' in state:
+        state.pop('new_round')
         _round = match.round_by_ordinal[ordinal] = mk_empty_round()
+    else:
+        _round = match.round_by_ordinal[ordinal]
 
     _round.list_gameplay.append(round_event)
 
@@ -46,10 +47,11 @@ def process_death_event(event, telemetry, state):
 
     ordinal = state['round']
 
-    if ordinal in match.round_by_ordinal:
-        _round = match.round_by_ordinal[ordinal]
-    else:
+    if 'new_round' in state:
         _round = match.round_by_ordinal[ordinal] = mk_empty_round()
+        state.pop('new_round')
+    else:
+        _round = match.round_by_ordinal[ordinal]
 
     _round.list_gameplay.append(death)
 
@@ -90,6 +92,8 @@ def process_round_finished_event(event, telemetry, state):
                 player.round_outcome_by_ordinal[ordinal] = player_round_outcome
 
             team.round_outcome_by_ordinal[ordinal] = team_round_outcome
+
+    state['new_round'] = True
 
     return None
 
