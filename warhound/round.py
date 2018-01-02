@@ -73,17 +73,13 @@ def mk_empty_round():
     return Round()
 
 
-def process_round_finished_event(event, _round, state):
-    cursor, e_type, data = event
-
+def process_round_finished_event(_round, data, state):
     _round.dict_finish_attribute_by_name = data
 
     return None
 
 
-def process_round_event(event, _round, state):
-    cursor, e_type, data = event
-
+def process_round_event(_round, data, state):
     player_id = data['userID']
     side      = state[   'dict_side_by_player_id'][player_id]
     team_id   = state['dict_team_id_by_player_id'][player_id]
@@ -101,9 +97,7 @@ def process_round_event(event, _round, state):
     return None
 
 
-def process_death_event(event, _round, state):
-    cursor, e_type, data = event
-
+def process_death_event(_round, data, state):
     player_id = data['userID']
     side      = state[   'dict_side_by_player_id'][player_id]
     team_id   = state['dict_team_id_by_player_id'][player_id]
@@ -119,9 +113,7 @@ def process_death_event(event, _round, state):
     return None
 
 
-def process_user_round_spell(event, _round, state):
-    cursor, e_type, data = event
-
+def process_user_round_spell(_round, data, state):
     player_id = data['accountId']
     ordinal   = data['round']
     side      = state[   'dict_side_by_player_id'][player_id]

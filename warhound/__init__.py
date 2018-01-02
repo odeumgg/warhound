@@ -7,14 +7,6 @@ from .matchmaking import mk_empty_matchmaking
 from .outcome import mk_empty_outcome
 
 
-class Event(namedtuple('Event', ['cursor', 'e_type', 'data'])):
-    __slots__ = ()
-
-
-    def __new__(cls, cursor, e_type, data):
-        return super(Event, cls).__new__(cls, cursor, e_type, data)
-
-
 class Telemetry(namedtuple('Telemetry', ['matchmaking', 'match', 'outcome'])):
     __slots__ = ()
 
@@ -29,8 +21,7 @@ def attempt(obj_event, dict_processor_by_event_type, dest,state):
 
     if e_type in dict_processor_by_event_type:
         maybe_processor = dict_processor_by_event_type[e_type]
-        event = Event(obj_event['cursor'], e_type, obj_event['dataObject'])
-        maybe_processor(event, dest, state)
+        maybe_processor(dest, obj_event['dataObject'], state)
 
     return None
 

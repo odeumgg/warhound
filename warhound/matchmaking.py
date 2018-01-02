@@ -12,9 +12,7 @@ def mk_empty_matchmaking():
     return Matchmaking()
 
 
-def process_queue_event(event, matchmaking, state):
-    cursor, e_type, data = event
-
+def process_queue_event(matchmaking, data, state):
     # TODO
 
     return None

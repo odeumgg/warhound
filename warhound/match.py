@@ -79,17 +79,13 @@ def mk_empty_match(num_round):
     return match
 
 
-def process_match_start(event, match, state):
-    cursor, e_type, data = event
-
+def process_match_start(match, data, state):
     match.dict_start_attribute_by_name = data
 
     return None
 
 
-def process_match_reserved_user(event, match, state):
-    cursor, e_type, data = event
-
+def process_match_reserved_user(match, data, state):
     player_id = data['accountId']
     team_id   = data['teamId']
     side      = data['team']
@@ -112,9 +108,7 @@ def process_match_reserved_user(event, match, state):
     return None
 
 
-def process_battlerite_pick_event(event, match, state):
-    cursor, e_type, data = event
-
+def process_battlerite_pick_event(match, data, state):
     battlerite_id = data['battleriteType']
     player_id     = data['userID']
 
@@ -127,17 +121,13 @@ def process_battlerite_pick_event(event, match, state):
     return None
 
 
-def process_match_finished_event(event, match, state):
-    cursor, e_type, data = event
-
+def process_match_finished_event(match, data, state):
     match.dict_finish_attribute_by_name = data
 
     return None
 
 
-def process_server_shutdown(event, match, state):
-    cursor, e_type, data = event
-
+def process_server_shutdown(match, data, state):
     match.dict_shutdown_attribute_by_name = data
 
     return None

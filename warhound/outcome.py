@@ -69,9 +69,7 @@ def mk_empty_outcome():
     return Outcome()
 
 
-def process_round_finished_event(event, outcome, state):
-    cursor, e_type, data = event
-
+def process_round_finished_event(outcome, data, state):
     ordinal = data['round']
 
     # for index, team_by_id in enumerate(match.list_dict_team_by_id, start=1):
@@ -104,17 +102,13 @@ def process_round_finished_event(event, outcome, state):
     return None
 
 
-def process_match_finished_event(event, outcome, state):
-    cursor, e_type, data        = event
-
+def process_match_finished_event(outcome, data, state):
     # outcome                     = mk_empty_outcome()
 
     return None
 
 
-def process_team_update_event(event, outcome, state):
-    cursor, e_type, data = event
-
+def process_team_update_event(outcome, data, state):
     # Store some form of team update
 
     return None
