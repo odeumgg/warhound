@@ -15,8 +15,5 @@ with open(telemetry_path, 'rb') as telemetry_json:
     raw       = telemetry_json.read()
     telemetry = warhound.process(json.loads(raw))
 
-    _, match, _ = telemetry
-
-    import pdb
-    pdb.set_trace()
+    matchmaking, match, outcome = telemetry
 

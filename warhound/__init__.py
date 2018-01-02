@@ -46,15 +46,19 @@ def process(obj):
     _match       = mk_empty_match(len(list_round_finished_event))
     _outcome     = mk_empty_outcome()
 
-    state = { 'round': 0,
-              'match_dict_team_id_by_player_id': _match.dict_team_id_by_player_id }
+    state = { 'round': 0, 'dict_team_id_by_player_id': {},
+              'dict_side_by_player_id': {} }
 
     for _evt in sorted(obj, key=lambda e: e['cursor']):
         attempt(_evt, mm.PROCESSOR_BY_EVENT_TYPE, _matchmaking, state)
         attempt(_evt,  m.PROCESSOR_BY_EVENT_TYPE,       _match, state)
 
         if _evt['type'] in r.PROCESSOR_BY_EVENT_TYPE:
-            _round = _match.list_round[state['round']]
+            if 'round' in _evt['dataObject']:
+                _round = _match.list_round[_evt['dataObject']['round']]
+            else:
+                _round = _match.list_round[state['round']]
+
             attempt(_evt, r.PROCESSOR_BY_EVENT_TYPE, _round, state)
 
         attempt(_evt, o.PROCESSOR_BY_EVENT_TYPE, _outcome, state)

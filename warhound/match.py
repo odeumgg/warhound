@@ -99,11 +99,15 @@ def process_match_reserved_user(event, match, state):
 
     team = match.dict_team_by_id.get(team_id, mk_empty_team())
 
-    team.dict_player_by_id[player_id]          = player
+    team.dict_player_by_id[player_id] = player
+
     match.dict_team_by_id[team_id]             = team
     match.dict_team_id_by_player_id[player_id] = team_id
     match.dict_player_by_id[player_id]         = player
     match.list_dict_team_by_id[side][team_id]  = team
+
+    state['dict_team_id_by_player_id'][player_id] = team_id
+    state[   'dict_side_by_player_id'][player_id] = side
 
     return None
 

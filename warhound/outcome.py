@@ -74,32 +74,32 @@ def process_round_finished_event(event, outcome, state):
 
     ordinal = data['round']
 
-    for index, team_by_id in enumerate(match.list_dict_team_by_id, start=1):
-        for team_id, team in team_by_id.items():
-            won = data['winningTeam'] == index
+    # for index, team_by_id in enumerate(match.list_dict_team_by_id, start=1):
+    #     for team_id, team in team_by_id.items():
+    #         won = data['winningTeam'] == index
 
-            team_round_performance         = mk_empty_team_round_performance()
-            team_round_performance.team_id = team.team_id
-            team_round_performance.round   = ordinal
-            team_round_performance.won     = won
+    #         team_round_performance         = mk_empty_team_round_performance()
+    #         team_round_performance.team_id = team.team_id
+    #         team_round_performance.round   = ordinal
+    #         team_round_performance.won     = won
 
-            for player_id, player in team.player_by_id.items():
-                l = lambda s: s['userID'] == player_id
+    #         for player_id, player in team.player_by_id.items():
+    #             l = lambda s: s['userID'] == player_id
 
-                player_stats = list(filter(l, data['playerStats']))
+    #             player_stats = list(filter(l, data['playerStats']))
 
-                player_round_performance = mk_empty_player_round_performance()
-                player_round_performance.player_id = player_id
-                player_round_performance.team_id   = team_id
-                player_round_performance.round     = ordinal
-                player_round_performance.won       = won
-                player_round_performance.stats     = player_stats
+    #             player_round_performance = mk_empty_player_round_performance()
+    #             player_round_performance.player_id = player_id
+    #             player_round_performance.team_id   = team_id
+    #             player_round_performance.round     = ordinal
+    #             player_round_performance.won       = won
+    #             player_round_performance.stats     = player_stats
 
-                team_round_performance.stats_by_player_id[player_id] = player_stats
+    #             team_round_performance.stats_by_player_id[player_id] = player_stats
 
-                outcome.list_player_round_performance_by_player_id[player_id].append(player_round_performance)
+    #             outcome.list_player_round_performance_by_player_id[player_id].append(player_round_performance)
 
-            outcome.list_team_round_performance_by_team_id[player_id].append(team_round_performance)
+    #         outcome.list_team_round_performance_by_team_id[player_id].append(team_round_performance)
 
     return None
 
@@ -107,13 +107,7 @@ def process_round_finished_event(event, outcome, state):
 def process_match_finished_event(event, outcome, state):
     cursor, e_type, data        = event
 
-    outcome                     = mk_empty_outcome()
-    outcome.duration_sec        = data['matchLength']
-    outcome.attrs               = data
-    outcome.list_score          = data['teamOneScore']
-    outcome.list_score          = data['teamTwoScore']
-
-    telemetry.outcome = outcome
+    # outcome                     = mk_empty_outcome()
 
     return None
 
@@ -128,6 +122,8 @@ def process_team_update_event(event, outcome, state):
 
 PROCESSOR_BY_EVENT_TYPE = \
     {
+        'Structures.RoundFinishedEvent': process_round_finished_event,
+        'Structures.MatchFinishedEvent': process_match_finished_event,
         'com.stunlock.battlerite.team.TeamUpdateEvent':
             process_team_update_event,
     }

@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from .util import OneIndexedList
 
 
@@ -41,10 +43,10 @@ class Round:
         self.list_spell_info                   = []
         self.list_list_gameplay                = OneIndexedList() # by side
         self.list_list_spell_info              = OneIndexedList() # by side
-        self.dict_list_gameplay_by_team_id     = []
-        self.dict_list_spell_info_by_team_id   = []
-        self.dict_list_gameplay_by_player_id   = []
-        self.dict_list_spell_info_by_player_id = []
+        self.dict_list_gameplay_by_team_id     = defaultdict(list)
+        self.dict_list_spell_info_by_team_id   = defaultdict(list)
+        self.dict_list_gameplay_by_player_id   = defaultdict(list)
+        self.dict_list_spell_info_by_player_id = defaultdict(list)
 
         # one for each side...
         self.list_list_gameplay.append([])
@@ -83,13 +85,18 @@ def process_round_event(event, _round, state):
     cursor, e_type, data = event
 
     player_id = data['userID']
+    side      = state[   'dict_side_by_player_id'][player_id]
+    team_id   = state['dict_team_id_by_player_id'][player_id]
 
     round_event                        = mk_empty_round_event()
     round_event.dict_attribute_by_name = data
 
-    state['round'] = ordinal = data['round']
-
     _round.list_gameplay.append(round_event)
+    _round.list_list_gameplay[side].append(round_event)
+    _round.dict_list_gameplay_by_team_id[team_id].append(round_event)
+    _round.dict_list_gameplay_by_player_id[player_id].append(round_event)
+
+    state['round'] = ordinal = data['round']
 
     return None
 
@@ -98,42 +105,35 @@ def process_death_event(event, _round, state):
     cursor, e_type, data = event
 
     player_id = data['userID']
+    side      = state[   'dict_side_by_player_id'][player_id]
+    team_id   = state['dict_team_id_by_player_id'][player_id]
 
     death_event                        = mk_empty_death_event()
     death_event.dict_attribute_by_name = data
 
     _round.list_gameplay.append(death_event)
+    _round.list_list_gameplay[side].append(death_event)
+    _round.dict_list_gameplay_by_team_id[team_id].append(death_event)
+    _round.dict_list_gameplay_by_player_id[player_id].append(death_event)
 
     return None
 
 
-def process_user_round_spell(event, match, state):
+def process_user_round_spell(event, _round, state):
     cursor, e_type, data = event
 
-    # user_round_spell             = mk_empty_user_round_spell()
-    # user_round_spell.player_id   = data['accountId']
-    # user_round_spell.champion_id = data['character']
-    # user_round_spell.attrs       = data
+    player_id = data['accountId']
+    ordinal   = data['round']
+    side      = state[   'dict_side_by_player_id'][player_id]
+    team_id   = state['dict_team_id_by_player_id'][player_id]
 
-    ordinal = data['round']
+    user_round_spell                        = mk_empty_user_round_spell()
+    user_round_spell.dict_attribute_by_name = data
 
-    # player = match.player_by_id[user_round_spell.player_id]
-
-    # if ordinal in player.list_list_user_round_spells:
-    #     list_user_round_spells = \
-    #         player.list_list_user_round_spells[ordinal]
-    # else:
-    #     list_user_round_spells = []
-    #     player.list_list_user_round_spells.append(list_user_round_spells)
-
-    # list_user_round_spells.append(user_round_spell)
-
-    # if ordinal in match.round_by_ordinal:
-    #     _round = match.round_by_ordinal[ordinal]
-    # else:
-    #     _round = match.round_by_ordinal[ordinal] = mk_empty_round()
-
-    # _round.list_user_round_spells.append(user_round_spell)
+    _round.list_spell_info.append(user_round_spell)
+    _round.list_list_spell_info[side].append(user_round_spell)
+    _round.dict_list_spell_info_by_team_id[team_id].append(user_round_spell)
+    _round.dict_list_spell_info_by_player_id[player_id].append(user_round_spell)
 
     return None
 
