@@ -34,7 +34,7 @@ def process(obj):
 
     matchmaking = mk_empty_matchmaking()
     match       = mk_empty_match(len(list_round_finished_event))
-    outcome     = mk_empty_outcome()
+    outcome     = mk_empty_outcome(len(list_round_finished_event))
 
     state = { 'round': 0, 'dict_team_id_by_player_id': {},
               'dict_side_by_player_id': {} }

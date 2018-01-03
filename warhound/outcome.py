@@ -2,114 +2,103 @@ from collections import defaultdict
 from .util import OneIndexedList
 
 
-class TeamRoundPerformance:
-    __slots__ = ('team_id', 'round', 'won', 'stats_by_player_id')
+class PlayerRoundStats:
+    __slots__ = ('dict_attribute_by_name')
 
 
     def __init__(self):
-        self.team_id            = None
-        self.round              = None
-        self.won                = None
-        self.stats_by_player_id = {}
+        self.dict_attribute_by_name = {}
 
 
-class TeamMatchPerformance:
-    __slots__ = ()
-
-
-    def __init__(self):
-        pass
-
-
-class PlayerRoundPerformance:
-    __slots__ = ('player_id', 'team_id', 'round', 'won', 'stats')
+class RoundSummary:
+    __slots__ = ('dict_attribute_by_name',
+                 'list_dict_player_round_stats_by_player_id',
+                 'dict_player_round_stats_by_player_id')
 
 
     def __init__(self):
-        self.player_id = None
-        self.team_id   = None
-        self.round     = None
-        self.won       = None
-        self.stats     = None
+        self.dict_attribute_by_name                    = None
+        self.list_dict_player_round_stats_by_player_id = OneIndexedList()
+        self.dict_player_round_stats_by_player_id      = {}
+
+        # one dict for each side...
+        self.list_dict_player_round_stats_by_player_id.append({})
+        self.list_dict_player_round_stats_by_player_id.append({})
 
 
-class PlayerMatchPerformance:
-    __slots__ = ('match_id', 'attrs')
+class TeamUpdate:
+    __slots__ = ('dict_attribute_by_name')
 
 
     def __init__(self):
-        pass
+        self.dict_attribute_by_name = None
 
 
 class Outcome:
-    __slots__ = ()
+    __slots__ = ('dict_attribute_by_name', 'list_round_summary',
+                 'dict_team_update_by_team_id')
 
     
     def __init__(self):
-        pass
+        self.dict_attribute_by_name      = None
+        self.list_round_summary          = []
+        self.dict_team_update_by_team_id = {}
 
 
-def mk_empty_team_round_performance():
-    return TeamRoundPerformance()
+def mk_empty_player_round_stats():
+    return PlayerRoundStats()
 
 
-def mk_empty_team_match_performance():
-    return TeamMatchPerformance()
+def mk_empty_round_summary():
+    return RoundSummary()
 
 
-def mk_empty_player_round_performance():
-    return PlayerRoundPerformance()
+def mk_empty_team_update():
+    return TeamUpdate()
 
 
-def mk_empty_player_match_performance():
-    return PlayerMatchPerformance()
+def mk_empty_outcome(num_round):
+    outcome = Outcome()
 
+    for ordinal in range(0, num_round):
+        outcome.list_round_summary.append(mk_empty_round_summary())
 
-def mk_empty_outcome():
-    return Outcome()
+    return outcome
 
 
 def process_round_finished_event(outcome, data, state):
     ordinal = data['round']
+    
+    round_summary                        = outcome.list_round_summary[ordinal]
+    round_summary.dict_attribute_by_name = data
 
-    # for index, team_by_id in enumerate(match.list_dict_team_by_id, start=1):
-    #     for team_id, team in team_by_id.items():
-    #         won = data['winningTeam'] == index
+    for obj_stats in data['playerStats']:
+        player_id = obj_stats['userID']
+        side      = state['dict_side_by_player_id'][player_id]
 
-    #         team_round_performance         = mk_empty_team_round_performance()
-    #         team_round_performance.team_id = team.team_id
-    #         team_round_performance.round   = ordinal
-    #         team_round_performance.won     = won
+        player_round_stats = mk_empty_player_round_stats()
+        player_round_stats.dict_attribute_by_name = obj_stats
 
-    #         for player_id, player in team.player_by_id.items():
-    #             l = lambda s: s['userID'] == player_id
-
-    #             player_stats = list(filter(l, data['playerStats']))
-
-    #             player_round_performance = mk_empty_player_round_performance()
-    #             player_round_performance.player_id = player_id
-    #             player_round_performance.team_id   = team_id
-    #             player_round_performance.round     = ordinal
-    #             player_round_performance.won       = won
-    #             player_round_performance.stats     = player_stats
-
-    #             team_round_performance.stats_by_player_id[player_id] = player_stats
-
-    #             outcome.list_player_round_performance_by_player_id[player_id].append(player_round_performance)
-
-    #         outcome.list_team_round_performance_by_team_id[player_id].append(team_round_performance)
+        round_summary. \
+            list_dict_player_round_stats_by_player_id[side][player_id] = \
+            player_round_stats
+        round_summary.dict_player_round_stats_by_player_id[player_id] = \
+            player_round_stats
 
     return None
 
 
 def process_match_finished_event(outcome, data, state):
-    # outcome                     = mk_empty_outcome()
+    outcome.dict_attribute_by_name = data
 
     return None
 
 
 def process_team_update_event(outcome, data, state):
-    # Store some form of team update
+    team_id = data['teamID']
+
+    team_update                                  = mk_empty_team_update()
+    outcome.dict_team_update_by_team_id[team_id] = team_update
 
     return None
 
