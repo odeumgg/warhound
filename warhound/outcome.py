@@ -3,21 +3,20 @@ from .util import OneIndexedList
 
 
 class PlayerRoundStats:
-    __slots__ = ('dict_attribute_by_name')
+    __slots__ = ('raw')
 
 
     def __init__(self):
-        self.dict_attribute_by_name = {}
+        self.raw = None
 
 
 class RoundSummary:
-    __slots__ = ('dict_attribute_by_name',
-                 'list_dict_player_round_stats_by_player_id',
+    __slots__ = ('raw', 'list_dict_player_round_stats_by_player_id',
                  'dict_player_round_stats_by_player_id')
 
 
     def __init__(self):
-        self.dict_attribute_by_name                    = None
+        self.raw                                       = None
         self.list_dict_player_round_stats_by_player_id = OneIndexedList()
         self.dict_player_round_stats_by_player_id      = {}
 
@@ -27,20 +26,19 @@ class RoundSummary:
 
 
 class TeamUpdate:
-    __slots__ = ('dict_attribute_by_name')
+    __slots__ = ('raw')
 
 
     def __init__(self):
-        self.dict_attribute_by_name = None
+        self.raw = None
 
 
 class Outcome:
-    __slots__ = ('dict_attribute_by_name', 'list_round_summary',
-                 'dict_team_update_by_team_id')
+    __slots__ = ('raw', 'list_round_summary', 'dict_team_update_by_team_id')
 
     
     def __init__(self):
-        self.dict_attribute_by_name      = None
+        self.raw                         = None
         self.list_round_summary          = []
         self.dict_team_update_by_team_id = {}
 
@@ -69,15 +67,15 @@ def mk_empty_outcome(num_round):
 def process_round_finished_event(outcome, data, state):
     ordinal = data['round']
     
-    round_summary                        = outcome.list_round_summary[ordinal]
-    round_summary.dict_attribute_by_name = data
+    round_summary     = outcome.list_round_summary[ordinal]
+    round_summary.raw = data
 
     for obj_stats in data['playerStats']:
         player_id = obj_stats['userID']
         side      = state['dict_side_by_player_id'][player_id]
 
-        player_round_stats = mk_empty_player_round_stats()
-        player_round_stats.dict_attribute_by_name = obj_stats
+        player_round_stats     = mk_empty_player_round_stats()
+        player_round_stats.raw = obj_stats
 
         round_summary. \
             list_dict_player_round_stats_by_player_id[side][player_id] = \
@@ -89,7 +87,7 @@ def process_round_finished_event(outcome, data, state):
 
 
 def process_match_finished_event(outcome, data, state):
-    outcome.dict_attribute_by_name = data
+    outcome.raw = data
 
     return None
 

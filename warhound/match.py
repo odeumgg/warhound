@@ -3,18 +3,18 @@ from .round import mk_empty_round
 
 
 class Battlerite:
-    __slots__ = ('dict_attribute_by_name')
+    __slots__ = ('raw')
 
     def __init__(self):
-        self.dict_attribute_by_name = {}
+        self.raw = None
 
 
 class Player:
-    __slots__ = ('dict_attribute_by_name', 'dict_battlerite_by_id')
+    __slots__ = ('raw', 'dict_battlerite_by_id')
 
     
     def __init__(self):
-        self.dict_attribute_by_name = {}
+        self.raw                    = None
         self.dict_battlerite_by_id  = {}
 
 
@@ -28,22 +28,21 @@ class Team:
 
 
 class Match:
-    __slots__ = ('dict_start_attribute_by_name',
-                 'dict_finish_attribute_by_name',
-                 'dict_shutdown_attribute_by_name', 'dict_team_by_id',
+    __slots__ = ('dict_start_raw', 'dict_finish_raw',
+                 'dict_shutdown_raw', 'dict_team_by_id',
                  'dict_team_id_by_player_id', 'dict_player_by_id',
                  'list_dict_team_by_id', 'list_round')
 
 
     def __init__(self):
-        self.dict_start_attribute_by_name    = {}
-        self.dict_finish_attribute_by_name   = {}
-        self.dict_shutdown_attribute_by_name = {}
-        self.dict_team_by_id                 = {}
-        self.dict_team_id_by_player_id       = {}
-        self.dict_player_by_id               = {}
-        self.list_dict_team_by_id            = OneIndexedList() # by side
-        self.list_round                      = []
+        self.dict_start_raw            = {}
+        self.dict_finish_raw           = {}
+        self.dict_shutdown_raw         = {}
+        self.dict_team_by_id           = {}
+        self.dict_team_id_by_player_id = {}
+        self.dict_player_by_id         = {}
+        self.list_dict_team_by_id      = OneIndexedList() # by side
+        self.list_round                = []
 
         # one dict for each side...
         self.list_dict_team_by_id.append({})
@@ -80,7 +79,7 @@ def mk_empty_match(num_round):
 
 
 def process_match_start(match, data, state):
-    match.dict_start_attribute_by_name = data
+    match.dict_start_raw = data
 
     return None
 
@@ -90,8 +89,8 @@ def process_match_reserved_user(match, data, state):
     team_id   = data['teamId']
     side      = data['team']
 
-    player                        = mk_empty_player()
-    player.dict_attribute_by_name = data
+    player     = mk_empty_player()
+    player.raw = data
 
     team = match.dict_team_by_id.get(team_id, mk_empty_team())
 
@@ -112,8 +111,8 @@ def process_battlerite_pick_event(match, data, state):
     battlerite_id = data['battleriteType']
     player_id     = data['userID']
 
-    battlerite                        = mk_empty_battlerite()
-    battlerite.dict_attribute_by_name = data
+    battlerite     = mk_empty_battlerite()
+    battlerite.raw = data
 
     player = match.dict_player_by_id[player_id]
     player.dict_battlerite_by_id[battlerite_id] = battlerite
@@ -122,13 +121,13 @@ def process_battlerite_pick_event(match, data, state):
 
 
 def process_match_finished_event(match, data, state):
-    match.dict_finish_attribute_by_name = data
+    match.dict_finish_raw = data
 
     return None
 
 
 def process_server_shutdown(match, data, state):
-    match.dict_shutdown_attribute_by_name = data
+    match.dict_shutdown_raw = data
 
     return None
 

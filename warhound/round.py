@@ -4,33 +4,32 @@ from .util import OneIndexedList
 
 
 class RoundEvent:
-    __slots__ = ('dict_attribute_by_name')
+    __slots__ = ('raw')
 
 
     def __init__(self):
-        self.dict_attribute_by_name = {}
+        self.raw = None
 
 
 class DeathEvent:
-    __slots__ = ('dict_attribute_by_name')
+    __slots__ = ('raw')
 
 
     def __init__(self):
-        self.dict_attribute_by_name = {}
+        self.raw = None
 
 
 class UserRoundSpell:
-    __slots__ = ('dict_attribute_by_name')
+    __slots__ = ('raw')
 
 
     def __init__(self):
-        self.dict_attribute_by_name = {}
+        self.raw = None
 
 
 class Round:
-    __slots__ = ('dict_finish_attribute_by_name', 'list_gameplay',
-                 'list_spell_info', 'list_list_gameplay',
-                 'list_list_spell_info',
+    __slots__ = ('dict_finish_raw', 'list_gameplay', 'list_spell_info',
+                 'list_list_gameplay', 'list_list_spell_info',
                  'dict_list_gameplay_by_team_id',
                  'dict_list_spell_info_by_team_id',
                  'dict_list_gameplay_by_player_id',
@@ -38,7 +37,7 @@ class Round:
 
 
     def __init__(self):
-        self.dict_finish_attribute_by_name     = {}
+        self.dict_finish_raw                   = {}
         self.list_gameplay                     = []
         self.list_spell_info                   = []
         self.list_list_gameplay                = OneIndexedList() # by side
@@ -74,7 +73,7 @@ def mk_empty_round():
 
 
 def process_round_finished_event(_round, data, state):
-    _round.dict_finish_attribute_by_name = data
+    _round.dict_finish_raw = data
 
     return None
 
@@ -84,8 +83,8 @@ def process_round_event(_round, data, state):
     side      = state[   'dict_side_by_player_id'][player_id]
     team_id   = state['dict_team_id_by_player_id'][player_id]
 
-    round_event                        = mk_empty_round_event()
-    round_event.dict_attribute_by_name = data
+    round_event     = mk_empty_round_event()
+    round_event.raw = data
 
     _round.list_gameplay.append(round_event)
     _round.list_list_gameplay[side].append(round_event)
@@ -102,8 +101,8 @@ def process_death_event(_round, data, state):
     side      = state[   'dict_side_by_player_id'][player_id]
     team_id   = state['dict_team_id_by_player_id'][player_id]
 
-    death_event                        = mk_empty_death_event()
-    death_event.dict_attribute_by_name = data
+    death_event     = mk_empty_death_event()
+    death_event.raw = data
 
     _round.list_gameplay.append(death_event)
     _round.list_list_gameplay[side].append(death_event)
@@ -119,8 +118,8 @@ def process_user_round_spell(_round, data, state):
     side      = state[   'dict_side_by_player_id'][player_id]
     team_id   = state['dict_team_id_by_player_id'][player_id]
 
-    user_round_spell                        = mk_empty_user_round_spell()
-    user_round_spell.dict_attribute_by_name = data
+    user_round_spell     = mk_empty_user_round_spell()
+    user_round_spell.raw = data
 
     _round.list_spell_info.append(user_round_spell)
     _round.list_list_spell_info[side].append(user_round_spell)

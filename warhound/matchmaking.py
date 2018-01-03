@@ -1,11 +1,11 @@
 
 
 class QueueEvent:
-    __slots__ = ('dict_attribute_by_name')
+    __slots__ = ('raw')
 
 
     def __init__(self):
-        self.dict_attribute_by_name = None
+        self.raw = None
 
 
 class Matchmaking:
@@ -27,8 +27,8 @@ def mk_empty_matchmaking():
 def process_queue_event(matchmaking, data, state):
     player_id = data['userId']
 
-    queue_event                        = mk_empty_queue_event()
-    queue_event.dict_attribute_by_name = data
+    queue_event     = mk_empty_queue_event()
+    queue_event.raw = data
 
     matchmaking.dict_queue_event_by_player_id[player_id] = queue_event
 
