@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from . import matchmaking as mm, match as m, outcome as o, round as r
+from . import matchmaking as mm, match as m, outcome as o, match_round as r
 
 from .match import mk_empty_match
 from .matchmaking import mk_empty_matchmaking

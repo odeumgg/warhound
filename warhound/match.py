@@ -1,5 +1,5 @@
 from .util import OneIndexedList
-from .round import mk_empty_round
+from .match_round import mk_empty_round
 
 
 class Battlerite:
