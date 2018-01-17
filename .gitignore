@@ -1,9 +1,12 @@
-.cache
-.coverage
+build
+dist
 
+*.egg-info
 *.swp
 
 __pycache__
+.cache
+.coverage
 
 telemetries
 
