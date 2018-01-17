@@ -1,5 +1,5 @@
-from .util import OneIndexedList
-from .match_round import mk_empty_round
+from . import util
+from . import match_round
 
 
 class Battlerite:
@@ -35,33 +35,29 @@ class Match:
 
 
     def __init__(self):
-        self.dict_start_raw            = {}
-        self.dict_finish_raw           = {}
-        self.dict_shutdown_raw         = {}
+        self.dict_start_raw            = None
+        self.dict_finish_raw           = None
+        self.dict_shutdown_raw         = None
         self.dict_team_by_id           = {}
         self.dict_team_id_by_player_id = {}
         self.dict_player_by_id         = {}
-        self.list_dict_team_by_id      = OneIndexedList() # by side
+        self.list_dict_team_by_id      = util.mk_oil() # by side
         self.list_round                = []
 
-        # one dict for each side...
-        self.list_dict_team_by_id.append({})
-        self.list_dict_team_by_id.append({})
 
-
-def mk_empty_battlerite():
+def mk_battlerite():
     return Battlerite()
 
 
-def mk_empty_player():
+def mk_player():
     return Player()
 
 
-def mk_empty_team():
+def mk_team():
     return Team()
 
 
-def mk_empty_match(num_round):
+def mk_match(num_round):
     """
     The telemetry demarcates rounds only when they end. We could always
     allocate a new round at the end of the current one, but would have an
@@ -72,8 +68,12 @@ def mk_empty_match(num_round):
     """
     match = Match()
 
-    for ordinal in range(0, num_round):
-        match.list_round.append(mk_empty_round())
+    match.list_round = \
+        [match_round.mk_round() for i in range(0, num_round)]
+
+    # one dict for each side...
+    match.list_dict_team_by_id.append({})
+    match.list_dict_team_by_id.append({})
 
     return match
 
@@ -89,10 +89,10 @@ def process_match_reserved_user(match, data, state):
     team_id   = data['teamId']
     side      = data['team']
 
-    player     = mk_empty_player()
+    player     = mk_player()
     player.raw = data
 
-    team = match.dict_team_by_id.get(team_id, mk_empty_team())
+    team = match.dict_team_by_id.get(team_id, mk_team())
 
     team.dict_player_by_id[player_id] = player
 
@@ -101,8 +101,8 @@ def process_match_reserved_user(match, data, state):
     match.dict_player_by_id[player_id]         = player
     match.list_dict_team_by_id[side][team_id]  = team
 
-    state['dict_team_id_by_player_id'][player_id] = team_id
     state[   'dict_side_by_player_id'][player_id] = side
+    state['dict_team_id_by_player_id'][player_id] = team_id
 
     return None
 
@@ -111,7 +111,7 @@ def process_battlerite_pick_event(match, data, state):
     battlerite_id = data['battleriteType']
     player_id     = data['userID']
 
-    battlerite     = mk_empty_battlerite()
+    battlerite     = mk_battlerite()
     battlerite.raw = data
 
     player = match.dict_player_by_id[player_id]
@@ -133,11 +133,9 @@ def process_server_shutdown(match, data, state):
 
 
 PROCESSOR_BY_EVENT_TYPE = \
-    {
-        'Structures.MatchStart': process_match_start,
-        'Structures.MatchReservedUser': process_match_reserved_user,
-        'Structures.BattleritePickEvent': process_battlerite_pick_event,
-        'Structures.MatchFinishedEvent': process_match_finished_event,
-        'Structures.ServerShutdown': process_server_shutdown
-    }
+    { 'Structures.MatchStart': process_match_start,
+      'Structures.MatchReservedUser': process_match_reserved_user,
+      'Structures.BattleritePickEvent': process_battlerite_pick_event,
+      'Structures.MatchFinishedEvent': process_match_finished_event,
+      'Structures.ServerShutdown': process_server_shutdown }
 

@@ -2,9 +2,9 @@ from collections import namedtuple
 
 from . import matchmaking as mm, match as m, outcome as o, match_round as r
 
-from .match import mk_empty_match
-from .matchmaking import mk_empty_matchmaking
-from .outcome import mk_empty_outcome
+from .match import mk_match
+from .matchmaking import mk_matchmaking
+from .outcome import mk_outcome
 
 
 class Telemetry(namedtuple('Telemetry', ['matchmaking', 'match', 'outcome'])):
@@ -15,43 +15,71 @@ class Telemetry(namedtuple('Telemetry', ['matchmaking', 'match', 'outcome'])):
         return super(Telemetry, cls).__new__(cls, matchmaking, match, outcome)
 
 
-def attempt(obj_event, dict_processor_by_event_type, dest,state):
-    e_type = obj_event['type']
+def mk_telemetry(matchmaking, match, outcome):
+    return Telemetry(matchmaking, match, outcome)
 
-    if e_type in dict_processor_by_event_type:
-        maybe_processor = dict_processor_by_event_type[e_type]
-        maybe_processor(dest, obj_event['dataObject'], state)
+
+class NullUnknownProcessor:
+    def __call__(self, target, data_object, state):
+        pass
+
+
+def mk_null_unknown_processor():
+    return NullUnknownProcessor()
+
+
+def maybe_proc_matchmaking(kind):
+    return mm.PROCESSOR_BY_EVENT_TYPE.get(kind, None)
+
+
+def maybe_proc_match(kind):
+    return m.PROCESSOR_BY_EVENT_TYPE.get(kind, None)
+
+
+def maybe_proc_round(kind):
+    return r.PROCESSOR_BY_EVENT_TYPE.get(kind, None)
+
+
+def maybe_proc_outcome(kind):
+    return o.PROCESSOR_BY_EVENT_TYPE.get(kind, None)
+
+
+def test_round_finished(obj):
+    return obj['type'] == 'Structures.RoundFinishedEvent'
+
+
+def process_single(list_pairs, data_object, state):
+    for (target, proc) in list_pairs:
+        proc(target, data_object, state)
 
     return None
 
 
-def test_round_finished(event):
-    return event['type'] == 'Structures.RoundFinishedEvent'
+def process(obj, maybe_proc_unknown=None):
+    proc_unknown = maybe_proc_unknown or mk_null_unknown_processor()
+    num_rounds   = len(list(filter(test_round_finished, obj)))
 
-
-def process(obj):
-    list_round_finished_event = list(filter(test_round_finished, obj))
-
-    matchmaking = mk_empty_matchmaking()
-    match       = mk_empty_match(len(list_round_finished_event))
-    outcome     = mk_empty_outcome(len(list_round_finished_event))
+    matchmaking, match, outcome = \
+        mk_matchmaking(), mk_match(num_rounds), mk_outcome(num_rounds)
 
     state = { 'round': 0, 'dict_team_id_by_player_id': {},
               'dict_side_by_player_id': {} }
 
-    for event in sorted(obj, key=lambda e: e['cursor']):
-        attempt(event, mm.PROCESSOR_BY_EVENT_TYPE, matchmaking, state)
-        attempt(event,  m.PROCESSOR_BY_EVENT_TYPE,       match, state)
+    for obj_event in sorted(obj, key=lambda e: e['cursor']):
+        kind        = obj_event['type']
+        data_object = obj_event['dataObject']
 
-        if event['type'] in r.PROCESSOR_BY_EVENT_TYPE:
-            if 'round' in event['dataObject']:
-                _round = match.list_round[event['dataObject']['round']]
-            else:
-                _round = match.list_round[state['round']]
+        proc_matchmaking = maybe_proc_matchmaking(kind) or proc_unknown
+        proc_match       =       maybe_proc_match(kind) or proc_unknown
+        proc_round       =       maybe_proc_round(kind) or proc_unknown
+        proc_outcome     =     maybe_proc_outcome(kind) or proc_unknown
 
-            attempt(event, r.PROCESSOR_BY_EVENT_TYPE, _round, state)
+        _round = match.list_round[data_object.get('round', state['round'])]
 
-        attempt(event, o.PROCESSOR_BY_EVENT_TYPE, outcome, state)
+        list_pairs = [ (matchmaking, proc_matchmaking), (match, proc_match),
+                       (_round, proc_round), (outcome, proc_outcome) ]
 
-    return Telemetry(matchmaking, match, outcome)
+        process_single(list_pairs, data_object, state)
+
+    return mk_telemetry(matchmaking, match, outcome)
 

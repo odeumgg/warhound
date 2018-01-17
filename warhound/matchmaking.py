@@ -16,18 +16,18 @@ class Matchmaking:
         self.dict_queue_event_by_player_id = {}
 
 
-def mk_empty_queue_event():
+def mk_queue_event():
     return QueueEvent()
 
 
-def mk_empty_matchmaking():
+def mk_matchmaking():
     return Matchmaking()
 
 
 def process_queue_event(matchmaking, data, state):
     player_id = data['userId']
 
-    queue_event     = mk_empty_queue_event()
+    queue_event     = mk_queue_event()
     queue_event.raw = data
 
     matchmaking.dict_queue_event_by_player_id[player_id] = queue_event
@@ -36,8 +36,5 @@ def process_queue_event(matchmaking, data, state):
 
 
 PROCESSOR_BY_EVENT_TYPE = \
-    {
-        'com.stunlock.service.matchmaking.avro.QueueEvent':
-            process_queue_event,
-    }
+    { 'com.stunlock.service.matchmaking.avro.QueueEvent': process_queue_event }
 

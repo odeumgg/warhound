@@ -1,5 +1,6 @@
 from collections import defaultdict
-from .util import OneIndexedList
+
+from warhound import util
 
 
 class PlayerRoundStats:
@@ -17,12 +18,8 @@ class RoundSummary:
 
     def __init__(self):
         self.raw                                       = None
-        self.list_dict_player_round_stats_by_player_id = OneIndexedList()
+        self.list_dict_player_round_stats_by_player_id = util.mk_oil()
         self.dict_player_round_stats_by_player_id      = {}
-
-        # one dict for each side...
-        self.list_dict_player_round_stats_by_player_id.append({})
-        self.list_dict_player_round_stats_by_player_id.append({})
 
 
 class TeamUpdate:
@@ -43,25 +40,45 @@ class Outcome:
         self.dict_team_update_by_team_id = {}
 
 
-def mk_empty_player_round_stats():
+def mk_player_round_stats():
     return PlayerRoundStats()
 
 
-def mk_empty_round_summary():
-    return RoundSummary()
+def mk_round_summary():
+    round_summary = RoundSummary()
+
+    # one dict for each side...
+    round_summary.list_dict_player_round_stats_by_player_id.append({})
+    round_summary.list_dict_player_round_stats_by_player_id.append({})
+
+    return round_summary
 
 
-def mk_empty_team_update():
+def mk_team_update():
     return TeamUpdate()
 
 
-def mk_empty_outcome(num_round):
+def mk_outcome(num_rounds):
     outcome = Outcome()
-
-    for ordinal in range(0, num_round):
-        outcome.list_round_summary.append(mk_empty_round_summary())
+    outcome.list_round_summary = \
+        [mk_round_summary() for i in range(0, num_rounds)]
 
     return outcome
+
+
+def process_round_stats(round_summary, data, state):
+    player_id = data['userID']
+    side      = state['dict_side_by_player_id'][player_id]
+
+    player_round_stats     = mk_player_round_stats()
+    player_round_stats.raw = data
+
+    round_summary.list_dict_player_round_stats_by_player_id[side][player_id] = \
+        player_round_stats
+    round_summary.dict_player_round_stats_by_player_id[player_id] = \
+        player_round_stats
+
+    return None
 
 
 def process_round_finished_event(outcome, data, state):
@@ -71,17 +88,7 @@ def process_round_finished_event(outcome, data, state):
     round_summary.raw = data
 
     for obj_stats in data['playerStats']:
-        player_id = obj_stats['userID']
-        side      = state['dict_side_by_player_id'][player_id]
-
-        player_round_stats     = mk_empty_player_round_stats()
-        player_round_stats.raw = obj_stats
-
-        round_summary. \
-            list_dict_player_round_stats_by_player_id[side][player_id] = \
-            player_round_stats
-        round_summary.dict_player_round_stats_by_player_id[player_id] = \
-            player_round_stats
+        process_round_stats(round_summary, obj_stats, state)
 
     return None
 
@@ -95,17 +102,15 @@ def process_match_finished_event(outcome, data, state):
 def process_team_update_event(outcome, data, state):
     team_id = data['teamID']
 
-    team_update                                  = mk_empty_team_update()
+    team_update                                  = mk_team_update()
     outcome.dict_team_update_by_team_id[team_id] = team_update
 
     return None
 
 
 PROCESSOR_BY_EVENT_TYPE = \
-    {
-        'Structures.RoundFinishedEvent': process_round_finished_event,
-        'Structures.MatchFinishedEvent': process_match_finished_event,
-        'com.stunlock.battlerite.team.TeamUpdateEvent':
-            process_team_update_event,
-    }
+    { 'Structures.RoundFinishedEvent': process_round_finished_event,
+      'Structures.MatchFinishedEvent': process_match_finished_event,
+      'com.stunlock.battlerite.team.TeamUpdateEvent':
+            process_team_update_event }
 

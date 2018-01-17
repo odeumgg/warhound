@@ -18,6 +18,10 @@ class OneIndexedList(list):
         super(OneIndexedList, self).append(None)
 
 
+    def __len__(self):
+        return super(OneIndexedList, self).__len__() - 1
+
+
     def __getitem__(self, key):
         if key == 0:
             raise IndexError('IndexError: list index out of range')
@@ -31,4 +35,8 @@ class OneIndexedList(list):
 
     def __repr__(self):
         return repr(self[1:])
+
+
+def mk_oil():
+    return OneIndexedList()
 
