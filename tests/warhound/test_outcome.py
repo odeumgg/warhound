@@ -92,5 +92,6 @@ def test_process_team_update_event(mocker):
 
     outcome.process_team_update_event(_outcome, data, state)
 
+    assert fake_team_update.raw is not None
     assert _outcome.dict_team_update_by_team_id['5678'] == fake_team_update
 

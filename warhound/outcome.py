@@ -103,6 +103,7 @@ def process_team_update_event(outcome, data, state):
     team_id = data['teamID']
 
     team_update                                  = mk_team_update()
+    team_update.raw                              = data
     outcome.dict_team_update_by_team_id[team_id] = team_update
 
     return None

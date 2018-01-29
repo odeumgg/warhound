@@ -1,5 +1,12 @@
 appdirs==1.4.3
+attrs==17.4.0
+coverage==4.4.2
 packaging==16.8
+pluggy==0.6.0
+py==1.5.2
 pyparsing==2.2.0
+pytest==3.3.2
+pytest-cov==2.5.1
+pytest-mock==1.6.3
 simplejson==3.13.2
-six==1.10.0
+six==1.11.0
