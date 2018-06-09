@@ -2,8 +2,8 @@ from collections import namedtuple
 import enum
 
 
-# The telemetry file format is simple: it is a source_json file-formatted list of
-# events. Here is what an example event from this list looks like:
+# The telemetry file format is simple: it is a source_json file-formatted list
+# of events. Here is what an example event from this list looks like:
 #
 # {
 # 	"cursor": 4238368588,
@@ -25,29 +25,6 @@ import enum
 # we have to deduce certain boundaries like "when round 2 started" by
 # inference. (In this case, we must look for the first event with kind
 # "Structures.RoundFinished" and pay attention to what follows until the next).
-#
-# This module pigeonholes events into one of the following categories:
-#
-# - Match
-# - Round
-# - Spell summary
-#
-# This pigeonholing is not clean--some things which SLS regards as "match"
-# events make more sense for our purposes as Round events, for example. Keep
-# in mind that warhound has its own take on which category each event is.
-#
-# Match events are top-level "meta" events describing when the match was queued
-# for, when it began, when the match (first round) starts, how each team
-# performed at the end, etc.
-#
-# Round events describe something that happened in a particular round, like the
-# pickup of a health shard, or the use of an EX ability.
-#
-# Spell summary events provide an *overview* of a hero's performance through
-# information about each spell. This is still a bit TBD as we figure out the
-# resolution of each event. Whereas there are many round events for one round,
-# there are many spell summary events for each round, each apparently providing
-# information about one spell for one hero.
 
 
 class Mask(enum.IntEnum):
@@ -73,7 +50,7 @@ class Kind(enum.IntEnum):
     ROUND_DEATH = 0x40000002
     ROUND_ENERGYABILITYUSED = 0x40000004
     ROUND_ENERGYSHARDPICKUP = 0x40000008
-    ROUND_FINISHED = 0x80000010
+    ROUND_FINISHED = 0x40000010
     ROUND_HEALTHSHARDPICKUP = 0x40000020
     ROUND_MOUNTDURATION = 0x40000040
     ROUND_RUNELASTHIT = 0x40000080
@@ -133,21 +110,8 @@ DICT_SPELLSUMMARY_EVENT_BY_DESCRIPTOR = {
 }
 
 
-class Event(namedtuple('Event', ['kind', 'source_json'])):
-    def __new__(cls, kind, source_json):
-        return super().__new__(cls, kind, source_json)
-
-
-def mk(*args, **kwargs):
-    return Event(*args, **kwargs)
-
-
-def from_source_json(source_json):
-    return mk(infer_event_kind(source_json), source_json)
-
-
-def infer_maybe_spellsummary_event_kind(source_json):
-    """Return either spell summary event or None."""
+def infer_maybe_spellsummary_kind(source_json):
+    """Return either spell summary kind or None."""
 
     if source_json['type'] == 'Structures.UserRoundSpell':
         descriptor = source_json['dataObject']['scoreType']
@@ -155,13 +119,13 @@ def infer_maybe_spellsummary_event_kind(source_json):
         try:
             return DICT_SPELLSUMMARY_EVENT_BY_DESCRIPTOR[descriptor]
         except KeyError:
-            return Event.SPELLSUMMARY_UNKNOWN
+            return Kind.SPELLSUMMARY_UNKNOWN
     else:
         return None
 
 
-def infer_maybe_round_event_kind(source_json):
-    """Return either round event or None."""
+def infer_maybe_round_kind(source_json):
+    """Return either round kind or None."""
 
     kind = source_json['type']
 
@@ -177,29 +141,54 @@ def infer_maybe_round_event_kind(source_json):
         return DICT_ROUND_EVENT_BY_DESCRIPTOR[(kind, subkind)]
     except KeyError:
         if kind == 'Structures.RoundEvent':
-            return Event.ROUND_UNKNOWN
+            return Kind.ROUND_UNKNOWN
         else:
             return None
 
 
-def infer_maybe_match_event_kind(source_json):
-    """Return either Match event or None."""
+def infer_maybe_match_kind(source_json):
+    """Return either Match kind or None."""
 
     try:
         return DICT_MATCH_EVENT_BY_DESCRIPTOR[source_json['type']]
     except KeyError:
-        return Event.MATCH_UNKNOWN
+        return Kind.MATCH_UNKNOWN
 
 
-def infer_event_kind(source_json):
-    """Given raw input from telemetry, return discrete kind or None."""
-    
-    # infer_maybe_match_event defaults to "unknown match event."
+def infer_kind(source_json):
+    """
+    Pigeonholes events into a specific type in one of the following groups:
+
+    - Match
+    - Round
+    - Spell summary
+
+    This pigeonholing is not clean--some things which SLS regards as "match"
+    events make more sense for our purposes as Round events, for example. Keep
+    in mind that warhound has its own take on which category each event is.
+
+    Match events are top-level "meta" events describing when the match was
+    queued for, when it began, when the match (first round) starts, how each
+    team performed at the end, etc.
+
+    Round events describe something that happened in a particular round, like
+    the pickup of a health shard, or the use of an EX ability.
+
+    Spell summary events provide an *overview* of a hero's performance through
+    information about each spell. This is still a bit TBD as we figure out the
+    resolution of each event. Whereas there are many round events for one round,
+    there are many spell summary events for each round, each apparently
+    providing information about one spell for one hero.
+
+    See the `Kind` enum for a concrete list of types.
+    """
+
+    # infer_maybe_match defaults to "unknown match source_json."
     # In other words, at least one heuristic will return something.
     list_heuristic = [
-        lambda source_json: infer_maybe_spellsummary_event_kind(source_json),
-        lambda source_json: infer_maybe_round_event_kind(source_json),
-        lambda source_json: infer_maybe_match_event_kind(source_json)
+        lambda source_json: infer_maybe_spellsummary_kind(source_json),
+        lambda source_json: infer_maybe_round_kind(source_json),
+        lambda source_json: infer_maybe_match_kind(source_json)
     ]
 
     for heuristic in list_heuristic:
@@ -209,3 +198,15 @@ def infer_event_kind(source_json):
     else:
         raise RuntimeError('insanity') # See comments above.
 
+
+class Event(namedtuple('Event', ['kind', 'source_json'])):
+    def __new__(cls, kind, source_json):
+        return super().__new__(cls, kind, source_json)
+
+
+def mk(*args, **kwargs):
+    return Event(*args, **kwargs)
+
+
+def json_object_to_event(json_object):
+    return mk(infer_kind(json_object), json_object)
