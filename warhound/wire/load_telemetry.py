@@ -1,8 +1,8 @@
-from warhound import event
+from .. import event
 import simplejson as json
 
 
-class ImportTelemetry:
+class LoadTelemetry:
     def __init__(self, path):
         self.path = path
 
@@ -19,4 +19,4 @@ class ImportTelemetry:
 
 
 def mk(*args, **kwargs):
-    return ImportTelemetry(*args, **kwargs)
+    return LoadTelemetry(*args, **kwargs)

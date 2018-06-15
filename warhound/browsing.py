@@ -78,14 +78,25 @@ def locate(catalog, kind, n):
     return index
 
 
-def only_kind(catalog, mask):
+def only_masked(catalog, mask):
     masked = mask & ONLY_CLASS
 
-    def test_of_kind(item):
+    def test_masked(item):
         _, event = item
         return masked & event.kind
 
-    filtered = filter(test_of_kind, enumerate(catalog.list_event))
+    filtered = filter(test_masked, enumerate(catalog.list_event))
+    indexes  = map(lambda a: a[0], filtered)
+
+    return list(indexes)
+
+
+def only_kind(catalog, *list_kind):
+    def test_kind(item):
+        _, event = item
+        return event.kind in list_kind
+
+    filtered = filter(test_kind, enumerate(catalog.list_event))
     indexes  = map(lambda a: a[0], filtered)
 
     return list(indexes)
